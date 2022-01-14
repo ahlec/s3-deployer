@@ -12,23 +12,20 @@ import {
 } from "@aws-sdk/client-cloudfront";
 
 import { Asset, retrieveAssets, writeAsset } from "./assets";
+import { loadConfig } from "./config";
 import { confirm, writeLine } from "./console";
-import { LOCAL_BUILD_DIRECTORY } from "./constants";
-
-const S3_AWS_REGION = ""; // TODO
-const S3_BUCKET_NAME = ""; // TODO
-const CLOUDFRONT_AWS_REGION = ""; // TODO
-const CLOUDFRONT_ID = ""; // TODO
+import { COSMICONFIG_MODULE_NAME, LOCAL_BUILD_DIRECTORY } from "./constants";
 
 async function shouldUploadFile(
   client: S3Client,
+  bucketName: string,
   key: string,
   eTag: string
 ): Promise<boolean> {
   try {
     const head = await client.send(
       new HeadObjectCommand({
-        Bucket: S3_BUCKET_NAME,
+        Bucket: bucketName,
         Key: key,
       })
     );
@@ -105,6 +102,17 @@ function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
 }
 
 async function main() {
+  // Retrieve the config
+  const config = loadConfig();
+  if (!config) {
+    writeLine(
+      `${chalk.red(
+        "Config file could not be found."
+      )} Define a cosmiconfig config for '${COSMICONFIG_MODULE_NAME}'.`
+    );
+    process.exit(10);
+  }
+
   // Intro into the tool
   writeLine(chalk.bold("Personal Website Release Tool"));
   writeLine("Deploys Alec's personal website to S3");
@@ -150,7 +158,7 @@ async function main() {
 
   // Perform the initial upload to S3
   writeLine(chalk.bold("Beginning S3 Upload."));
-  const s3Client = new S3Client({ region: S3_AWS_REGION });
+  const s3Client = new S3Client({ region: config.bucket.region });
   const uploadedAssets: Asset[] = [];
   for (const asset of assets) {
     // If this file is ignored, write it out and then move on
@@ -169,6 +177,7 @@ async function main() {
     // Determine if we should upload the file right now
     const shouldUpload = await shouldUploadFile(
       s3Client,
+      config.bucket.name,
       asset.bucketKey,
       eTag
     );
@@ -184,7 +193,7 @@ async function main() {
         new PutObjectCommand({
           ACL: "public-read",
           Body: contents,
-          Bucket: S3_BUCKET_NAME,
+          Bucket: config.bucket.name,
           CacheControl: "max-age=315360000, no-transform, public",
           ContentType: asset.contentType,
           Key: asset.bucketKey,
@@ -214,17 +223,17 @@ async function main() {
   }
 
   // Invalidate Cloudfront
-  if (uploadedAssets.length) {
+  if (uploadedAssets.length && config.cloudfront) {
     writeLine(chalk.bold("Beginning Cloudfront invalidation."));
 
     const cloudfrontClient = new CloudFrontClient({
-      region: CLOUDFRONT_AWS_REGION,
+      region: config.cloudfront.region,
     });
 
     try {
       const invalidation = await cloudfrontClient.send(
         new CreateInvalidationCommand({
-          DistributionId: CLOUDFRONT_ID,
+          DistributionId: config.cloudfront.id,
           InvalidationBatch: {
             CallerReference: Date.now().toString(),
             Paths: {
