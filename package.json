@@ -1,0 +1,46 @@
+{
+  "name": "@ahlec/s3-deployer",
+  "version": "1.0.0",
+  "description": "Node CLI tool for customized, powerful deploys to S3.",
+  "author": "Alec Jacob Deitloff <alec.deitloff@gmail.com>",
+  "license": "MIT",
+  "main": "index.js",
+  "scripts": {
+    "start": "ts-node ./src/main.ts",
+    "build": "tsc",
+    "clean": "rm -rf ./lib",
+    "lint": "eslint \"./src/**/*.ts\"",
+    "format": "prettier --write ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ahlec/s3-deployer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ahlec/s3-deployer/issues"
+  },
+  "dependencies": {
+    "@aws-sdk/client-cloudfront": "^3.43.0",
+    "@aws-sdk/client-s3": "^3.44.0",
+    "chalk": "4.1.2",
+    "inquirer": "^8.2.0",
+    "md5": "^2.3.0",
+    "mime-types": "^2.1.34"
+  },
+  "devDependencies": {
+    "@types/inquirer": "^8.1.3",
+    "@types/md5": "^2.3.1",
+    "@types/mime-types": "^2.1.1",
+    "@types/node": "^16.11.11",
+    "@typescript-eslint/eslint-plugin": "^5.9.1",
+    "@typescript-eslint/parser": "^5.9.1",
+    "eslint": "^8.6.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.5.1",
+    "ts-node": "^10.4.0",
+    "typescript": "4.5.2"
+  },
+  "prettier": {},
+  "packageManager": "yarn@3.1.1"
+}
