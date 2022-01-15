@@ -11,7 +11,10 @@ import {
   CreateInvalidationCommand,
 } from "@aws-sdk/client-cloudfront";
 
-import { Asset, retrieveAssets, writeAsset } from "./assets";
+import type { Asset } from "./assets/types";
+import { retrieveAssets } from "./assets/retrieveAssets";
+import { writeAsset } from "./assets/writeAsset";
+
 import { getConfig } from "./config";
 import { confirm, writeLine } from "./console";
 import { COSMICONFIG_MODULE_NAME } from "./constants";
