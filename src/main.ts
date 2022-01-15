@@ -15,9 +15,10 @@ import type { Asset } from "./assets/types";
 import { retrieveAssets } from "./assets/retrieveAssets";
 import { writeAsset } from "./assets/writeAsset";
 
-import { getConfig } from "./config";
+import { loadConfig } from "./config";
 import { confirm, writeLine } from "./console";
 import { COSMICONFIG_MODULE_NAME } from "./constants";
+import { getOptions } from "./options";
 
 async function shouldUploadFile(
   client: S3Client,
@@ -106,7 +107,7 @@ function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
 
 async function main() {
   // Retrieve the config
-  const config = getConfig();
+  const config = loadConfig();
   if (!config) {
     writeLine(
       `${chalk.red(
@@ -116,15 +117,19 @@ async function main() {
     process.exit(10);
   }
 
+  const options = getOptions(config);
+
   // Intro into the tool
   writeLine(chalk.bold("Personal Website Release Tool"));
   writeLine("Deploys Alec's personal website to S3");
   writeLine();
 
   // Output information about the last build
-  const doesBuildDirectoryExist = existsSync(config.buildDir);
+  const doesBuildDirectoryExist = existsSync(options.buildDirAbsolutePath);
 
-  writeLine(`${chalk.bold("Build directory:")} ${config.buildDir}`);
+  writeLine(
+    `${chalk.bold("Build directory:")} ${options.buildDirAbsolutePath}`
+  );
   if (!doesBuildDirectoryExist) {
     writeLine(
       `${chalk.red("Directory does not exist.")} Run ${chalk.bold(
@@ -134,7 +139,9 @@ async function main() {
     process.exit(1);
   }
 
-  const buildDirLastModified = (await promises.stat(config.buildDir)).mtime;
+  const buildDirLastModified = (
+    await promises.stat(options.buildDirAbsolutePath)
+  ).mtime;
   const relativeLastModified = getRelativeTime(buildDirLastModified);
   const lastModifiedChalk = relativeLastModified.isRecent
     ? chalk.white
@@ -156,11 +163,11 @@ async function main() {
     return;
   }
 
-  const assets = await retrieveAssets(config);
+  const assets = await retrieveAssets(options);
 
   // Perform the initial upload to S3
   writeLine(chalk.bold("Beginning S3 Upload."));
-  const s3Client = new S3Client({ region: config.bucket.region });
+  const s3Client = new S3Client({ region: options.bucket.region });
   const uploadedAssets: Asset[] = [];
   for (const asset of assets) {
     // If this file is ignored, write it out and then move on
@@ -179,7 +186,7 @@ async function main() {
     // Determine if we should upload the file right now
     const shouldUpload = await shouldUploadFile(
       s3Client,
-      config.bucket.name,
+      options.bucket.name,
       asset.bucketKey,
       eTag
     );
@@ -195,7 +202,7 @@ async function main() {
         new PutObjectCommand({
           ACL: "public-read",
           Body: contents,
-          Bucket: config.bucket.name,
+          Bucket: options.bucket.name,
           CacheControl: "max-age=315360000, no-transform, public",
           ContentType: asset.contentType,
           Key: asset.bucketKey,
@@ -225,17 +232,17 @@ async function main() {
   }
 
   // Invalidate Cloudfront
-  if (uploadedAssets.length && config.cloudfront) {
+  if (uploadedAssets.length && options.cloudfront) {
     writeLine(chalk.bold("Beginning Cloudfront invalidation."));
 
     const cloudfrontClient = new CloudFrontClient({
-      region: config.cloudfront.region,
+      region: options.cloudfront.region,
     });
 
     try {
       const invalidation = await cloudfrontClient.send(
         new CreateInvalidationCommand({
-          DistributionId: config.cloudfront.id,
+          DistributionId: options.cloudfront.id,
           InvalidationBatch: {
             CallerReference: Date.now().toString(),
             Paths: {

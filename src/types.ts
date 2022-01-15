@@ -30,3 +30,9 @@ export type Config = {
    */
   cloudfront?: CloudfrontDefinition | null;
 };
+
+export type Options = {
+  bucket: BucketDefinition;
+  buildDirAbsolutePath: string;
+  cloudfront: CloudfrontDefinition | null;
+};

@@ -2,7 +2,7 @@ import { promises } from "fs";
 import mime from "mime-types";
 import path from "path";
 
-import type { Config } from "../types";
+import type { Options } from "../types";
 import type { Asset } from "./types";
 
 function getContentType(filename: string): string {
@@ -12,7 +12,7 @@ function getContentType(filename: string): string {
   return charset ? mimeType + "; charset=" + charset.toLowerCase() : mimeType;
 }
 
-function getIsIgnored(config: Config, filename: string): boolean {
+function getIsIgnored(options: Options, filename: string): boolean {
   if (filename.endsWith(".DS_Store")) {
     return true;
   }
@@ -21,7 +21,10 @@ function getIsIgnored(config: Config, filename: string): boolean {
     return true;
   }
 
-  if (filename === path.resolve(config.buildDir, "asset-manifest.json")) {
+  if (
+    filename ===
+    path.resolve(options.buildDirAbsolutePath, "asset-manifest.json")
+  ) {
     return true;
   }
 
@@ -29,7 +32,7 @@ function getIsIgnored(config: Config, filename: string): boolean {
 }
 
 async function recursiveRetrieveAssets(
-  config: Config,
+  options: Options,
   directory: string,
   output: Asset[]
 ): Promise<void> {
@@ -38,24 +41,26 @@ async function recursiveRetrieveAssets(
     entities.map(async (entity): Promise<void> => {
       const absoluteFilename = path.resolve(directory, entity.name);
       if (entity.isDirectory()) {
-        return recursiveRetrieveAssets(config, absoluteFilename, output);
+        return recursiveRetrieveAssets(options, absoluteFilename, output);
       }
 
       output.push({
         // Don't include leading slash as well
-        bucketKey: absoluteFilename.substring(config.buildDir.length + 1),
+        bucketKey: absoluteFilename.substring(
+          options.buildDirAbsolutePath.length + 1
+        ),
         contentType: getContentType(absoluteFilename),
         getContents: () => promises.readFile(absoluteFilename),
-        isIgnored: getIsIgnored(config, absoluteFilename),
+        isIgnored: getIsIgnored(options, absoluteFilename),
       });
     })
   );
 }
 
 export async function retrieveAssets(
-  config: Config
+  options: Options
 ): Promise<readonly Asset[]> {
   const assets: Asset[] = [];
-  await recursiveRetrieveAssets(config, config.buildDir, assets);
+  await recursiveRetrieveAssets(options, options.buildDirAbsolutePath, assets);
   return assets;
 }
