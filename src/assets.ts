@@ -4,7 +4,7 @@ import mime from "mime-types";
 import path from "path";
 
 import { eraseLastLine, writeLine } from "./console";
-import { LOCAL_BUILD_DIRECTORY } from "./constants";
+import type { Config } from "./types";
 
 export interface Asset {
   bucketKey: string;
@@ -20,7 +20,7 @@ function getContentType(filename: string): string {
   return charset ? mimeType + "; charset=" + charset.toLowerCase() : mimeType;
 }
 
-function getIsIgnored(filename: string): boolean {
+function getIsIgnored(config: Config, filename: string): boolean {
   if (filename.endsWith(".DS_Store")) {
     return true;
   }
@@ -29,7 +29,7 @@ function getIsIgnored(filename: string): boolean {
     return true;
   }
 
-  if (filename === path.resolve(LOCAL_BUILD_DIRECTORY, "asset-manifest.json")) {
+  if (filename === path.resolve(config.buildDir, "asset-manifest.json")) {
     return true;
   }
 
@@ -37,6 +37,7 @@ function getIsIgnored(filename: string): boolean {
 }
 
 async function recursiveRetrieveAssets(
+  config: Config,
   directory: string,
   output: Asset[]
 ): Promise<void> {
@@ -45,23 +46,25 @@ async function recursiveRetrieveAssets(
     entities.map(async (entity): Promise<void> => {
       const absoluteFilename = path.resolve(directory, entity.name);
       if (entity.isDirectory()) {
-        return recursiveRetrieveAssets(absoluteFilename, output);
+        return recursiveRetrieveAssets(config, absoluteFilename, output);
       }
 
       output.push({
         // Don't include leading slash as well
-        bucketKey: absoluteFilename.substr(LOCAL_BUILD_DIRECTORY.length + 1),
+        bucketKey: absoluteFilename.substring(config.buildDir.length + 1),
         contentType: getContentType(absoluteFilename),
         getContents: () => promises.readFile(absoluteFilename),
-        isIgnored: getIsIgnored(absoluteFilename),
+        isIgnored: getIsIgnored(config, absoluteFilename),
       });
     })
   );
 }
 
-export async function retrieveAssets(): Promise<readonly Asset[]> {
+export async function retrieveAssets(
+  config: Config
+): Promise<readonly Asset[]> {
   const assets: Asset[] = [];
-  await recursiveRetrieveAssets(LOCAL_BUILD_DIRECTORY, assets);
+  await recursiveRetrieveAssets(config, config.buildDir, assets);
   return assets;
 }
 

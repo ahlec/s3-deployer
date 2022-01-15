@@ -15,6 +15,13 @@ export type Config = {
   bucket: BucketDefinition;
 
   /**
+   * The directory of the code that should be deployed to the S3 bucket.
+   * If this is a relative filename, it will be resolved according to the
+   * working directory.
+   */
+  buildDir: string;
+
+  /**
    * The AWS Cloudfront distribution that serves the provided S3 bucket and
    * which should be invalidated as part of the deploy.
    *

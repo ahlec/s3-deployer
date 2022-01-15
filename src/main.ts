@@ -12,9 +12,9 @@ import {
 } from "@aws-sdk/client-cloudfront";
 
 import { Asset, retrieveAssets, writeAsset } from "./assets";
-import { loadConfig } from "./config";
+import { getConfig } from "./config";
 import { confirm, writeLine } from "./console";
-import { COSMICONFIG_MODULE_NAME, LOCAL_BUILD_DIRECTORY } from "./constants";
+import { COSMICONFIG_MODULE_NAME } from "./constants";
 
 async function shouldUploadFile(
   client: S3Client,
@@ -103,7 +103,7 @@ function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
 
 async function main() {
   // Retrieve the config
-  const config = loadConfig();
+  const config = getConfig();
   if (!config) {
     writeLine(
       `${chalk.red(
@@ -119,9 +119,9 @@ async function main() {
   writeLine();
 
   // Output information about the last build
-  const doesBuildDirectoryExist = existsSync(LOCAL_BUILD_DIRECTORY);
+  const doesBuildDirectoryExist = existsSync(config.buildDir);
 
-  writeLine(`${chalk.bold("Build directory:")} ${LOCAL_BUILD_DIRECTORY}`);
+  writeLine(`${chalk.bold("Build directory:")} ${config.buildDir}`);
   if (!doesBuildDirectoryExist) {
     writeLine(
       `${chalk.red("Directory does not exist.")} Run ${chalk.bold(
@@ -131,8 +131,7 @@ async function main() {
     process.exit(1);
   }
 
-  const buildDirLastModified = (await promises.stat(LOCAL_BUILD_DIRECTORY))
-    .mtime;
+  const buildDirLastModified = (await promises.stat(config.buildDir)).mtime;
   const relativeLastModified = getRelativeTime(buildDirLastModified);
   const lastModifiedChalk = relativeLastModified.isRecent
     ? chalk.white
@@ -154,7 +153,7 @@ async function main() {
     return;
   }
 
-  const assets = await retrieveAssets();
+  const assets = await retrieveAssets(config);
 
   // Perform the initial upload to S3
   writeLine(chalk.bold("Beginning S3 Upload."));
