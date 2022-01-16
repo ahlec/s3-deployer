@@ -1,6 +1,16 @@
 import path from "path";
 
-import type { Config, Confirmation, Options } from "./types";
+import type {
+  AssetDefinitions,
+  AssetRule,
+  Config,
+  Confirmation,
+  Options,
+} from "./types";
+
+const DEFAULT_ASSET_DEFINITIONS: AssetDefinitions = {
+  "**/.DS_Store": false,
+};
 
 export function getOptions(config: Config, dryRun: boolean): Options {
   // Resolve `buildDir` into an absolute path using the current working
@@ -35,7 +45,30 @@ export function getOptions(config: Config, dryRun: boolean): Options {
     }
   }
 
+  // Merge our asset definition defaults in with the config ones. Do this first
+  // so that defaults can be overwritten
+  const allAssetDefinitions: AssetDefinitions = {
+    ...DEFAULT_ASSET_DEFINITIONS,
+    ...config.assets,
+  };
+
+  const assetSpecialRules: AssetRule[] = [];
+  // TODO: Order patterns by specificity (more specific -> less specific glob patterns)
+  Object.entries(allAssetDefinitions).forEach(
+    ([globPattern, definition]): void => {
+      if (typeof definition === "undefined") {
+        return;
+      }
+
+      assetSpecialRules.push({
+        definition,
+        globPattern,
+      });
+    }
+  );
+
   return {
+    assetSpecialRules,
     bucket: config.bucket,
     buildDirAbsolutePath,
     cloudfront: config.cloudfront || null,

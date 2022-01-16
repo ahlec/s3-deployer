@@ -1,3 +1,11 @@
+export type AssetDefinition = {
+  contentType?: string;
+};
+
+export type AssetDefinitions = {
+  [globPattern: string]: AssetDefinition | boolean | undefined;
+};
+
 export type Confirmation = string | (() => string);
 
 export type BucketDefinition = {
@@ -11,6 +19,25 @@ export type CloudfrontDefinition = {
 };
 
 export type Config = {
+  /**
+   * Custom rules for which assets should be deployed to the S3 bucket. This
+   * is optional and comes with sensible defaults for which files should be
+   * deployed and how; specifying this value allows for customizing this
+   * behavior.
+   *
+   * Assets are identified using glob patterns resolved relative to the root
+   * of the build directory.
+   *
+   * TO DEPLOY AN ASSET:
+   *      - Specify a complex object (@see AssetDefinition)
+   *      - Specify true
+   *      - Omit/define nothing (will fall back to using defaults)
+   *
+   * TO IGNORE AN ASSET:
+   *      - Specify false
+   */
+  assets?: AssetDefinitions;
+
   /**
    * The AWS S3 bucket that files should be deployed to.
    */
@@ -42,8 +69,19 @@ export type Config = {
   cloudfront?: CloudfrontDefinition | null;
 };
 
+export type AssetRule = {
+  globPattern: string;
+  definition: AssetDefinition | boolean;
+};
+
 export type Options = {
+  assetSpecialRules: readonly AssetRule[];
   bucket: BucketDefinition;
+
+  /**
+   * Absolute path to the build directory. Should NOT contain a trailing
+   * slash at the end.
+   */
   buildDirAbsolutePath: string;
   cloudfront: CloudfrontDefinition | null;
   confirmationPrompts: readonly string[];

@@ -1,1 +1,6 @@
-export type { BucketDefinition, CloudfrontDefinition, Config } from "./types";
+export type {
+  AssetDefinition,
+  BucketDefinition,
+  CloudfrontDefinition,
+  Config,
+} from "./types";

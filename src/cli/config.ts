@@ -2,6 +2,8 @@ import convict from "convict";
 import { cosmiconfigSync } from "cosmiconfig";
 
 import type {
+  AssetDefinition,
+  AssetDefinitions,
   BucketDefinition,
   CloudfrontDefinition,
   Config,
@@ -54,7 +56,53 @@ function assertIsConfirmation(val: unknown): asserts val is Confirmation {
   }
 }
 
+const ASSET_DEFINITION_VALIDATOR = convict<AssetDefinition>({
+  contentType: {
+    default: undefined,
+    format: String,
+  },
+});
+
 const CONFIG_VALIDATOR = convict<Config>({
+  assets: {
+    default: {},
+    format: (val: unknown): asserts val is AssetDefinitions | undefined => {
+      if (typeof val === "undefined") {
+        return;
+      }
+
+      if (typeof val !== "object" || !val) {
+        throw new Error("Value, if specified, must be an object");
+      }
+
+      const fields = Object.entries(val);
+      for (const [field, definition] of fields) {
+        switch (typeof definition) {
+          case "undefined":
+          case "boolean": {
+            continue;
+          }
+          case "object": {
+            if (!definition) {
+              throw new Error(`Asset definition '${field}' cannot be null`);
+            }
+
+            if (Array.isArray(definition)) {
+              throw new Error(`Asset definition '${field}' cannot be an array`);
+            }
+
+            ASSET_DEFINITION_VALIDATOR.load(definition).validate();
+            continue;
+          }
+          default: {
+            throw new Error(
+              `Asset definition '${field}' is invalid type: ${typeof definition}`
+            );
+          }
+        }
+      }
+    },
+  },
   bucket: {
     default: null,
     format: buildConvictFormat<BucketDefinition>({
