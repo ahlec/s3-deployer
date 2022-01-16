@@ -1,3 +1,5 @@
+export type Confirmation = string | (() => string);
+
 export type BucketDefinition = {
   name: string;
   region: string;
@@ -22,6 +24,15 @@ export type Config = {
   buildDir: string;
 
   /**
+   * Additional confirmation (y/n prompts) that the user must confirm prior to
+   * deploying. If the user answers "no" to any of these prompts, the deploy
+   * process will be aborted.
+   *
+   * @example ["Have you run `yarn lint` yet?", "Have you updated the package.json version?"]
+   */
+  confirmation?: Confirmation | readonly Confirmation[];
+
+  /**
    * The AWS Cloudfront distribution that serves the provided S3 bucket and
    * which should be invalidated as part of the deploy.
    *
@@ -35,5 +46,6 @@ export type Options = {
   bucket: BucketDefinition;
   buildDirAbsolutePath: string;
   cloudfront: CloudfrontDefinition | null;
+  confirmationPrompts: readonly string[];
   dryRun: boolean;
 };

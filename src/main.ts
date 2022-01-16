@@ -15,7 +15,8 @@ import type { Asset } from "./assets/types";
 import { retrieveAssets } from "./assets/retrieveAssets";
 import { writeAsset } from "./assets/writeAsset";
 
-import { confirm, writeLine } from "./console";
+import { receiveDeployConfirmation } from "./confirmation";
+import { writeLine } from "./console";
 import type { Options } from "./types";
 
 async function shouldUploadFile(
@@ -41,24 +42,6 @@ async function shouldUploadFile(
     console.log(e);
     return true;
   }
-}
-
-async function confirmDeployReady(): Promise<boolean> {
-  const wantsToDeploy = await confirm(
-    "Would you like to deploy the latest build in the build directory?"
-  );
-  if (!wantsToDeploy) {
-    return false;
-  }
-
-  const hasRunSynchronize = await confirm(
-    `Have you run ${chalk.bold("yarn synchronize")} already?`
-  );
-  if (!hasRunSynchronize) {
-    return false;
-  }
-
-  return true;
 }
 
 function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
@@ -143,7 +126,9 @@ export async function runDeploy(options: Options): Promise<void> {
   writeLine();
 
   // Perform the pre-deploy confirmation checks
-  const readyToDeploy = await confirmDeployReady();
+  const readyToDeploy = await receiveDeployConfirmation(
+    options.confirmationPrompts
+  );
   if (!readyToDeploy) {
     return;
   }

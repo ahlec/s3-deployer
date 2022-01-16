@@ -1,7 +1,12 @@
 import convict from "convict";
 import { cosmiconfigSync } from "cosmiconfig";
 
-import type { BucketDefinition, CloudfrontDefinition, Config } from "../types";
+import type {
+  BucketDefinition,
+  CloudfrontDefinition,
+  Config,
+  Confirmation,
+} from "../types";
 
 import { COSMICONFIG_MODULE_NAME } from "./constants";
 
@@ -37,6 +42,18 @@ function buildConvictFormat<T>(
   };
 }
 
+function assertIsConfirmation(val: unknown): asserts val is Confirmation {
+  switch (typeof val) {
+    case "string":
+    case "function": {
+      return;
+    }
+    default: {
+      throw new Error("Value is not a recognized Confirmation value");
+    }
+  }
+}
+
 const CONFIG_VALIDATOR = convict<Config>({
   bucket: {
     default: null,
@@ -67,6 +84,20 @@ const CONFIG_VALIDATOR = convict<Config>({
         format: CONVICT_FORMAT_NONEMPTY_STRING,
       },
     }),
+  },
+  confirmation: {
+    default: undefined,
+    format: (val: unknown) => {
+      if (typeof val === "undefined") {
+        return;
+      }
+
+      if (Array.isArray(val)) {
+        val.forEach(assertIsConfirmation);
+      } else {
+        assertIsConfirmation(val);
+      }
+    },
   },
 });
 
