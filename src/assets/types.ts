@@ -4,10 +4,3 @@ export type Asset = {
   getContents: () => Promise<Buffer>;
   isIgnored: boolean;
 };
-
-export type AssetState =
-  | "skipped"
-  | "uploading"
-  | "uploaded"
-  | "error"
-  | "ignored";

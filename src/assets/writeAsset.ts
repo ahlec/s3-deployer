@@ -2,7 +2,15 @@ import chalk from "chalk";
 
 import { eraseLastLine, writeLine } from "../console";
 
-import type { Asset, AssetState } from "./types";
+import type { Asset } from "./types";
+
+export type AssetState =
+  | "skipped"
+  | "dry-run uploaded"
+  | "uploading"
+  | "uploaded"
+  | "error"
+  | "ignored";
 
 let prevAssetWritten: Asset | null = null;
 export function writeAsset(asset: Asset, state: AssetState): void {
@@ -39,6 +47,9 @@ export function writeAsset(asset: Asset, state: AssetState): void {
     case "ignored": {
       line = `${chalk.bold("  IGNORED ")} ${chalk.dim(asset.bucketKey)}`;
       break;
+    }
+    case "dry-run uploaded": {
+      line = `${chalk.bold.bgHex("#F2CA5F")("  Dry Run ")} ${asset.bucketKey}`;
     }
   }
 

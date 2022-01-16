@@ -180,6 +180,12 @@ export async function runDeploy(options: Options): Promise<void> {
       continue;
     }
 
+    // Handle dry runs
+    if (options.dryRun) {
+      writeAsset(asset, "dry-run uploaded");
+      continue;
+    }
+
     // Upload the file
     writeAsset(asset, "uploading");
     try {
@@ -220,34 +226,44 @@ export async function runDeploy(options: Options): Promise<void> {
   if (uploadedAssets.length && options.cloudfront) {
     writeLine(chalk.bold("Beginning Cloudfront invalidation."));
 
-    const cloudfrontClient = new CloudFrontClient({
-      region: options.cloudfront.region,
-    });
-
-    try {
-      const invalidation = await cloudfrontClient.send(
-        new CreateInvalidationCommand({
-          DistributionId: options.cloudfront.id,
-          InvalidationBatch: {
-            CallerReference: Date.now().toString(),
-            Paths: {
-              Items: uploadedAssets.map((asset) => `/${asset.bucketKey}`),
-              Quantity: uploadedAssets.length,
-            },
-          },
-        })
-      );
-
-      if (!invalidation.Invalidation) {
-        console.error(invalidation);
-        throw new Error("Created invalidation, but didn't define Invalidation");
-      }
-
+    if (options.dryRun) {
       writeLine(
-        `${chalk.bold("Invalidation success.")} ${invalidation.Invalidation.Id}`
+        chalk.yellow("Dry run, so no invalidation is being performed.")
       );
-    } catch (e) {
-      console.error(e);
+    } else {
+      const cloudfrontClient = new CloudFrontClient({
+        region: options.cloudfront.region,
+      });
+
+      try {
+        const invalidation = await cloudfrontClient.send(
+          new CreateInvalidationCommand({
+            DistributionId: options.cloudfront.id,
+            InvalidationBatch: {
+              CallerReference: Date.now().toString(),
+              Paths: {
+                Items: uploadedAssets.map((asset) => `/${asset.bucketKey}`),
+                Quantity: uploadedAssets.length,
+              },
+            },
+          })
+        );
+
+        if (!invalidation.Invalidation) {
+          console.error(invalidation);
+          throw new Error(
+            "Created invalidation, but didn't define Invalidation"
+          );
+        }
+
+        writeLine(
+          `${chalk.bold("Invalidation success.")} ${
+            invalidation.Invalidation.Id
+          }`
+        );
+      } catch (e) {
+        console.error(e);
+      }
     }
   } else {
     writeLine(

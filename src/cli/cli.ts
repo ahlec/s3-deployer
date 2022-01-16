@@ -1,4 +1,6 @@
 import chalk from "chalk";
+import yargs from "yargs";
+import { hideBin } from "yargs/helpers";
 
 import { writeLine } from "../console";
 import { runDeploy } from "../main";
@@ -19,7 +21,16 @@ async function main(): Promise<void> {
     process.exit(10);
   }
 
-  const options = getOptions(config);
+  // Handle CLI arguments
+  const cliArgs = await yargs(hideBin(process.argv))
+    .option("dryRun", {
+      default: false,
+      type: "boolean",
+    })
+    .parse();
+
+  const options = getOptions(config, cliArgs.dryRun);
+
   runDeploy(options);
 }
 

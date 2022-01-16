@@ -35,4 +35,5 @@ export type Options = {
   bucket: BucketDefinition;
   buildDirAbsolutePath: string;
   cloudfront: CloudfrontDefinition | null;
+  dryRun: boolean;
 };
