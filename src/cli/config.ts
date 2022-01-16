@@ -1,8 +1,9 @@
 import convict from "convict";
 import { cosmiconfigSync } from "cosmiconfig";
 
+import type { BucketDefinition, CloudfrontDefinition, Config } from "../types";
+
 import { COSMICONFIG_MODULE_NAME } from "./constants";
-import type { BucketDefinition, CloudfrontDefinition, Config } from "./types";
 
 const CONVICT_FORMAT_NONEMPTY_STRING = "nonempty-string";
 
@@ -52,15 +53,7 @@ const CONFIG_VALIDATOR = convict<Config>({
   },
   buildDir: {
     default: null,
-    format: (val: unknown): asserts val is string => {
-      if (typeof val !== "string") {
-        throw new Error("Value must be a string.");
-      }
-
-      if (!val.length) {
-        throw new Error("Value must not be empty.");
-      }
-    },
+    format: CONVICT_FORMAT_NONEMPTY_STRING,
   },
   cloudfront: {
     default: undefined,

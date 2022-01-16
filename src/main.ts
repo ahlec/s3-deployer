@@ -15,10 +15,8 @@ import type { Asset } from "./assets/types";
 import { retrieveAssets } from "./assets/retrieveAssets";
 import { writeAsset } from "./assets/writeAsset";
 
-import { loadConfig } from "./config";
 import { confirm, writeLine } from "./console";
-import { COSMICONFIG_MODULE_NAME } from "./constants";
-import { getOptions } from "./options";
+import type { Options } from "./types";
 
 async function shouldUploadFile(
   client: S3Client,
@@ -105,20 +103,7 @@ function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
   };
 }
 
-async function main() {
-  // Retrieve the config
-  const config = loadConfig();
-  if (!config) {
-    writeLine(
-      `${chalk.red(
-        "Config file could not be found."
-      )} Define a cosmiconfig config for '${COSMICONFIG_MODULE_NAME}'.`
-    );
-    process.exit(10);
-  }
-
-  const options = getOptions(config);
-
+export async function runDeploy(options: Options): Promise<void> {
   // Intro into the tool
   writeLine(chalk.bold("Personal Website Release Tool"));
   writeLine("Deploys Alec's personal website to S3");
@@ -272,5 +257,3 @@ async function main() {
     );
   }
 }
-
-main();

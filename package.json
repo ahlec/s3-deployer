@@ -6,7 +6,7 @@
   "license": "MIT",
   "main": "index.js",
   "scripts": {
-    "start": "ts-node ./src/main.ts",
+    "start": "ts-node ./src/cli/cli.ts",
     "build": "tsc",
     "clean": "rm -rf ./lib",
     "lint": "eslint \"./src/**/*.ts\"",
