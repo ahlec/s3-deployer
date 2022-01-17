@@ -1,11 +1,6 @@
 import chalk from "chalk";
 import { existsSync, promises } from "fs";
-import md5 from "md5";
-import {
-  S3Client,
-  HeadObjectCommand,
-  PutObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 import {
   CloudFrontClient,
   CreateInvalidationCommand,
@@ -13,36 +8,10 @@ import {
 
 import type { Asset } from "./assets/types";
 import { retrieveAssets } from "./assets/retrieveAssets";
-import { writeAsset } from "./assets/writeAsset";
+import { uploadAsset } from "./assets/uploadAsset";
 
 import { receiveDeployConfirmation } from "./confirmation";
-import { writeLine } from "./console";
 import type { Options } from "./types";
-
-async function shouldUploadFile(
-  client: S3Client,
-  bucketName: string,
-  key: string,
-  eTag: string
-): Promise<boolean> {
-  try {
-    const head = await client.send(
-      new HeadObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-      })
-    );
-
-    return head.ETag !== eTag;
-  } catch (e) {
-    if (e.name === "NotFound") {
-      return true;
-    }
-
-    console.log(e);
-    return true;
-  }
-}
 
 function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
   const duration = Date.now() - ms.valueOf();
@@ -88,18 +57,18 @@ function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
 
 export async function runDeploy(options: Options): Promise<void> {
   // Intro into the tool
-  writeLine(chalk.bold("Personal Website Release Tool"));
-  writeLine("Deploys Alec's personal website to S3");
-  writeLine();
+  console.log(chalk.bold("Personal Website Release Tool"));
+  console.log("Deploys Alec's personal website to S3");
+  console.log();
 
   // Output information about the last build
   const doesBuildDirectoryExist = existsSync(options.buildDirAbsolutePath);
 
-  writeLine(
+  console.log(
     `${chalk.bold("Build directory:")} ${options.buildDirAbsolutePath}`
   );
   if (!doesBuildDirectoryExist) {
-    writeLine(
+    console.log(
       `${chalk.red("Directory does not exist.")} Run ${chalk.bold(
         "yarn build"
       )} to generate a build.`
@@ -115,7 +84,7 @@ export async function runDeploy(options: Options): Promise<void> {
     ? chalk.white
     : chalk.red;
 
-  writeLine(
+  console.log(
     lastModifiedChalk(
       `${chalk.bold("Last modified:")} ${buildDirLastModified.toString()} (${
         relativeLastModified.label
@@ -123,7 +92,7 @@ export async function runDeploy(options: Options): Promise<void> {
     )
   );
 
-  writeLine();
+  console.log();
 
   // Perform the pre-deploy confirmation checks
   const readyToDeploy = await receiveDeployConfirmation(
@@ -136,83 +105,37 @@ export async function runDeploy(options: Options): Promise<void> {
   const assets = await retrieveAssets(options);
 
   // Perform the initial upload to S3
-  writeLine(chalk.bold("Beginning S3 Upload."));
+  console.log(chalk.bold("Beginning S3 Upload."));
   const s3Client = new S3Client({ region: options.bucket.region });
   const uploadedAssets: Asset[] = [];
   for (const asset of assets) {
-    // If this file is ignored, write it out and then move on
-    if (asset.isIgnored) {
-      writeAsset(asset, "ignored");
-      continue;
-    }
+    const result = await uploadAsset(s3Client, options, asset);
 
-    // Read the current contents of the file
-    const contents = await asset.getContents();
-
-    // Compute the ETag, which for PutObject on AWS is the MD5 hash of the Body
-    // NOTE: AWS stores it as a string wrapped in double quotes
-    const eTag = `"${md5(contents)}"`;
-
-    // Determine if we should upload the file right now
-    const shouldUpload = await shouldUploadFile(
-      s3Client,
-      options.bucket.name,
-      asset.bucketKey,
-      eTag
-    );
-    if (!shouldUpload) {
-      writeAsset(asset, "skipped");
-      continue;
-    }
-
-    // Handle dry runs
-    if (options.dryRun) {
-      writeAsset(asset, "dry-run uploaded");
-      continue;
-    }
-
-    // Upload the file
-    writeAsset(asset, "uploading");
-    try {
-      await s3Client.send(
-        new PutObjectCommand({
-          ACL: "public-read",
-          Body: contents,
-          Bucket: options.bucket.name,
-          CacheControl: "max-age=315360000, no-transform, public",
-          ContentType: asset.contentType,
-          Key: asset.bucketKey,
-        })
-      );
-
-      writeAsset(asset, "uploaded");
+    if (result.shouldInvalidateCloudfront) {
       uploadedAssets.push(asset);
-    } catch {
-      writeAsset(asset, "error");
-      return; // Stop the process
     }
   }
 
   // Add a summary for the uploads
-  writeLine();
-  writeLine(
+  console.log();
+  console.log(
     `${chalk.bold("S3 Upload Complete.")} ${uploadedAssets.length} ${
       uploadedAssets.length === 1 ? "asset" : "assets"
     } uploaded.`
   );
   if (uploadedAssets.length) {
     uploadedAssets.forEach((asset): void => {
-      writeLine(` • ${asset.bucketKey}`);
+      console.log(` • ${asset.bucketKey}`);
     });
-    writeLine();
+    console.log();
   }
 
   // Invalidate Cloudfront
   if (uploadedAssets.length && options.cloudfront) {
-    writeLine(chalk.bold("Beginning Cloudfront invalidation."));
+    console.log(chalk.bold("Beginning Cloudfront invalidation."));
 
     if (options.dryRun) {
-      writeLine(
+      console.log(
         chalk.yellow("Dry run, so no invalidation is being performed.")
       );
     } else {
@@ -241,7 +164,7 @@ export async function runDeploy(options: Options): Promise<void> {
           );
         }
 
-        writeLine(
+        console.log(
           `${chalk.bold("Invalidation success.")} ${
             invalidation.Invalidation.Id
           }`
@@ -251,7 +174,7 @@ export async function runDeploy(options: Options): Promise<void> {
       }
     }
   } else {
-    writeLine(
+    console.log(
       `${chalk.bold(
         "Skipping Cloudfront invalidation."
       )} No files were uploaded.`

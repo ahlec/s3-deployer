@@ -2,7 +2,6 @@ import chalk from "chalk";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import { writeLine } from "../console";
 import { runDeploy } from "../main";
 import { getOptions } from "../options";
 
@@ -13,7 +12,7 @@ async function main(): Promise<void> {
   // Retrieve the config
   const config = loadConfig();
   if (!config) {
-    writeLine(
+    console.log(
       `${chalk.red(
         "Config file could not be found."
       )} Define a cosmiconfig config for '${COSMICONFIG_MODULE_NAME}'.`
