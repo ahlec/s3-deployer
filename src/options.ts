@@ -9,6 +9,9 @@ import type {
 } from "./types";
 
 const DEFAULT_ASSET_DEFINITIONS: AssetDefinitions = {
+  "**/*.{htm,html}": {
+    cacheControl: "no-cache",
+  },
   "**/.DS_Store": false,
 };
 

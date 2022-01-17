@@ -1,6 +1,7 @@
 import Ajv, { JSONSchemaType } from "ajv";
 import { cosmiconfigSync } from "cosmiconfig";
 
+import { COSMICONFIG_MODULE_NAME } from "../constants";
 import type {
   AssetDefinition,
   BucketDefinition,
@@ -8,11 +9,17 @@ import type {
   Config,
 } from "../types";
 
-import { COSMICONFIG_MODULE_NAME } from "./constants";
-
 const ASSET_DEFINITION_SCHEMA: JSONSchemaType<AssetDefinition> = {
   additionalProperties: false,
   properties: {
+    acl: {
+      nullable: true,
+      type: "string",
+    },
+    cacheControl: {
+      nullable: true,
+      type: "string",
+    },
     contentType: {
       nullable: true,
       type: "string",

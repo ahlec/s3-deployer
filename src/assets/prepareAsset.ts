@@ -2,6 +2,7 @@ import { promises } from "fs";
 import micromatch from "micromatch";
 import mime from "mime-types";
 
+import { DEFAULT_ACL, DEFAULT_CACHE_CONTROL } from "../constants";
 import type { Options } from "../types";
 import type { Asset, IgnoreReason } from "./types";
 
@@ -27,6 +28,8 @@ export function prepareAsset(
 
   let isIgnored: IgnoreReason | false;
   let contentType: string;
+  let cacheControl: string;
+  let acl: string;
   if (rule) {
     if (rule.definition === false) {
       isIgnored = {
@@ -42,15 +45,31 @@ export function prepareAsset(
     } else {
       contentType = getDefaultContentType(absoluteFilename);
     }
+
+    if (typeof rule.definition === "object" && rule.definition.cacheControl) {
+      cacheControl = rule.definition.cacheControl;
+    } else {
+      cacheControl = DEFAULT_CACHE_CONTROL;
+    }
+
+    if (typeof rule.definition === "object" && rule.definition.acl) {
+      acl = rule.definition.acl;
+    } else {
+      acl = DEFAULT_ACL;
+    }
   } else {
     isIgnored = false;
     contentType = getDefaultContentType(absoluteFilename);
+    cacheControl = DEFAULT_CACHE_CONTROL;
+    acl = DEFAULT_ACL;
   }
 
   return {
+    acl,
     // Bucket key should NOT include the leading / since it will nest everything
     // in a '/' directory in the S3 bucket
     bucketKey: relativeFilename.substring(1),
+    cacheControl,
     contentType,
     getContents: () => promises.readFile(absoluteFilename),
     isIgnored,

@@ -128,10 +128,10 @@ export async function uploadAsset(
   try {
     await s3Client.send(
       new PutObjectCommand({
-        ACL: "public-read",
+        ACL: asset.acl,
         Body: contents,
         Bucket: options.bucket.name,
-        CacheControl: "max-age=315360000, no-transform, public",
+        CacheControl: asset.cacheControl,
         ContentType: asset.contentType,
         Key: asset.bucketKey,
       })

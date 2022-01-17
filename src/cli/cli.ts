@@ -2,11 +2,11 @@ import chalk from "chalk";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+import { COSMICONFIG_MODULE_NAME } from "../constants";
 import { runDeploy } from "../main";
 import { getOptions } from "../options";
 
 import { loadConfig } from "./config";
-import { COSMICONFIG_MODULE_NAME } from "./constants";
 
 async function main(): Promise<void> {
   // Retrieve the config

@@ -4,7 +4,9 @@ export type IgnoreReason = {
 };
 
 export type Asset = {
+  acl: string;
   bucketKey: string;
+  cacheControl: string;
   contentType: string;
   getContents: () => Promise<Buffer>;
   isIgnored: IgnoreReason | false;

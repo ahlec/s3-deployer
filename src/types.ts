@@ -1,4 +1,6 @@
 export type AssetDefinition = {
+  acl?: string;
+  cacheControl?: string;
   contentType?: string;
 };
 
