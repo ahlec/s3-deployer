@@ -71,6 +71,7 @@ export type Config = {
 
 export type AssetRule = {
   globPattern: string;
+  isDefaultRule: boolean;
   definition: AssetDefinition | boolean;
 };
 

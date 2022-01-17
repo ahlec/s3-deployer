@@ -3,7 +3,7 @@ import micromatch from "micromatch";
 import mime from "mime-types";
 
 import type { Options } from "../types";
-import type { Asset } from "./types";
+import type { Asset, IgnoreReason } from "./types";
 
 function getDefaultContentType(filename: string): string {
   const mimeType = mime.lookup(filename) || "application/octet-stream";
@@ -25,11 +25,14 @@ export function prepareAsset(
     micromatch.isMatch(relativeFilename, r.globPattern)
   );
 
-  let isIgnored: boolean;
+  let isIgnored: IgnoreReason | false;
   let contentType: string;
   if (rule) {
     if (rule.definition === false) {
-      isIgnored = true;
+      isIgnored = {
+        globPattern: rule.globPattern,
+        isDefaultRule: rule.isDefaultRule,
+      };
     } else {
       isIgnored = false;
     }

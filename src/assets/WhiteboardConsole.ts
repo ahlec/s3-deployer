@@ -19,7 +19,7 @@ function ansiEraseLines(numLines: number): string {
   );
 }
 
-type LoggerFn = (...args: readonly string[]) => void;
+type LoggerFn = (...lines: readonly string[]) => void;
 
 /**
  * Console output class that will continually rewrite itself, but only itself.
@@ -29,8 +29,8 @@ type LoggerFn = (...args: readonly string[]) => void;
 function WhiteboardConsole(): LoggerFn {
   let prevNumLines = 0;
 
-  return (...args: readonly string[]): void => {
-    const output = wrapAnsi(args.join(" ") + "\n", process.stdout.columns, {
+  return (...lines: readonly string[]): void => {
+    const output = wrapAnsi(lines.join("\n") + "\n", process.stdout.columns, {
       hard: true,
       trim: false,
       wordWrap: false,

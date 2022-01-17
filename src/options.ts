@@ -63,6 +63,8 @@ export function getOptions(config: Config, dryRun: boolean): Options {
       assetSpecialRules.push({
         definition,
         globPattern,
+        isDefaultRule:
+          !config.assets || config.assets[globPattern] !== definition,
       });
     }
   );

@@ -66,7 +66,12 @@ export async function uploadAsset(
   // If this file is ignored, write it out and then move on
   if (asset.isIgnored) {
     logger(
-      `${statusBadge("IGNORED", chalk.bold)} ${chalk.dim(asset.bucketKey)}`
+      `${statusBadge("IGNORED", chalk.bold)} ${chalk.dim(asset.bucketKey)}`,
+      chalk.dim(
+        `  └ Rule '${asset.isIgnored.globPattern}'${
+          asset.isIgnored.isDefaultRule ? " (default rule)" : ""
+        }`
+      )
     );
 
     return {
