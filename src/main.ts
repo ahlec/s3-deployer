@@ -1,15 +1,12 @@
 import chalk from "chalk";
 import { existsSync, promises } from "fs";
 import { S3Client } from "@aws-sdk/client-s3";
-import {
-  CloudFrontClient,
-  CreateInvalidationCommand,
-} from "@aws-sdk/client-cloudfront";
 
 import type { Asset } from "./assets/types";
 import { retrieveAssets } from "./assets/retrieveAssets";
 import { uploadAsset } from "./assets/uploadAsset";
 
+import { invalidateCloudfront } from "./cloudfront";
 import { receiveDeployConfirmation } from "./confirmation";
 import type { Options } from "./types";
 
@@ -127,57 +124,11 @@ export async function runDeploy(options: Options): Promise<void> {
     uploadedAssets.forEach((asset): void => {
       console.log(` • ${asset.bucketKey}`);
     });
-    console.log();
   }
 
   // Invalidate Cloudfront
-  if (uploadedAssets.length && options.cloudfront) {
-    console.log(chalk.bold("Beginning Cloudfront invalidation."));
-
-    if (options.dryRun) {
-      console.log(
-        chalk.yellow("Dry run, so no invalidation is being performed.")
-      );
-    } else {
-      const cloudfrontClient = new CloudFrontClient({
-        region: options.cloudfront.region,
-      });
-
-      try {
-        const invalidation = await cloudfrontClient.send(
-          new CreateInvalidationCommand({
-            DistributionId: options.cloudfront.id,
-            InvalidationBatch: {
-              CallerReference: Date.now().toString(),
-              Paths: {
-                Items: uploadedAssets.map((asset) => `/${asset.bucketKey}`),
-                Quantity: uploadedAssets.length,
-              },
-            },
-          })
-        );
-
-        if (!invalidation.Invalidation) {
-          console.error(invalidation);
-          throw new Error(
-            "Created invalidation, but didn't define Invalidation"
-          );
-        }
-
-        console.log(
-          `${chalk.bold("Invalidation success.")} ${
-            invalidation.Invalidation.Id
-          }`
-        );
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  } else {
-    console.log(
-      `${chalk.bold(
-        "Skipping Cloudfront invalidation."
-      )} No files were uploaded.`
-    );
+  if (options.cloudfront) {
+    console.log();
+    await invalidateCloudfront(options.cloudfront, uploadedAssets, options);
   }
 }
