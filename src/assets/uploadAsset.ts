@@ -9,23 +9,7 @@ import {
 import type { Options } from "../types";
 
 import type { Asset } from "./types";
-import WhiteboardConsole from "./WhiteboardConsole";
-
-const STATUS_BADGE_WIDTH_CHARS = 11;
-
-function statusBadge(text: string, chalk: chalk.Chalk): string {
-  let paddedText: string;
-  if (text.length > STATUS_BADGE_WIDTH_CHARS) {
-    paddedText = text.substring(0, STATUS_BADGE_WIDTH_CHARS);
-  } else {
-    const remainingSpace = Math.max(0, STATUS_BADGE_WIDTH_CHARS - text.length);
-    const leftSide = Math.floor(remainingSpace / 2);
-    const rightSide = remainingSpace - leftSide;
-    paddedText = `${" ".repeat(leftSide)}${text}${" ".repeat(rightSide)}`;
-  }
-
-  return chalk(paddedText);
-}
+import { makeAssetLogger } from "./AssetLogger";
 
 async function shouldUploadFile(
   client: S3Client,
@@ -61,18 +45,24 @@ export async function uploadAsset(
   options: Options,
   asset: Asset
 ): Promise<UploadResult> {
-  const logger = WhiteboardConsole();
+  const logger = makeAssetLogger();
 
   // If this file is ignored, write it out and then move on
   if (asset.isIgnored) {
-    logger(
-      `${statusBadge("IGNORED", chalk.bold)} ${chalk.dim(asset.bucketKey)}`,
-      chalk.dim(
-        `  └ Rule '${asset.isIgnored.globPattern}'${
-          asset.isIgnored.isDefaultRule ? " (default rule)" : ""
-        }`
-      )
-    );
+    logger({
+      assetName: asset.bucketKey,
+      details: [
+        chalk.dim(
+          `Rule '${asset.isIgnored.globPattern}'${
+            asset.isIgnored.isDefaultRule ? " (default rule)" : ""
+          }`
+        ),
+      ],
+      statusBadge: {
+        chalk: chalk.bold.bgGray,
+        text: "IGNORED",
+      },
+    });
 
     return {
       shouldInvalidateCloudfront: false,
@@ -94,11 +84,14 @@ export async function uploadAsset(
     eTag
   );
   if (!shouldUpload) {
-    logger(
-      `${statusBadge("SKIPPED", chalk.bold.bgHex("#394253"))} ${chalk.dim(
-        asset.bucketKey
-      )}`
-    );
+    logger({
+      assetName: asset.bucketKey,
+      details: [],
+      statusBadge: {
+        chalk: chalk.bold.bgHex("#394253"),
+        text: "SKIPPED",
+      },
+    });
 
     return {
       shouldInvalidateCloudfront: false,
@@ -107,11 +100,14 @@ export async function uploadAsset(
 
   // Handle dry runs
   if (options.dryRun) {
-    logger(
-      `${statusBadge("DRY RUN", chalk.bold.bgHex("#F2CA5F"))} ${
-        asset.bucketKey
-      }`
-    );
+    logger({
+      assetName: asset.bucketKey,
+      details: [],
+      statusBadge: {
+        chalk: chalk.bold.bgHex("#F2CA5F"),
+        text: "DRY RUN",
+      },
+    });
 
     return {
       shouldInvalidateCloudfront: true,
@@ -119,11 +115,14 @@ export async function uploadAsset(
   }
 
   // Upload the file
-  logger(
-    `${statusBadge("WORKING..", chalk.bold.bgHex("#f1ca81").hex("#000"))} ${
-      asset.bucketKey
-    }`
-  );
+  logger({
+    assetName: asset.bucketKey,
+    details: [],
+    statusBadge: {
+      chalk: chalk.bold.bgHex("#f1ca81").hex("#000"),
+      text: "WORKING..",
+    },
+  });
 
   try {
     await s3Client.send(
@@ -137,17 +136,25 @@ export async function uploadAsset(
       })
     );
 
-    logger(
-      `${statusBadge("UPLOADED", chalk.bold.bgHex("#9cbf87").hex("#000"))} ${
-        asset.bucketKey
-      }`
-    );
+    logger({
+      assetName: asset.bucketKey,
+      details: [],
+      statusBadge: {
+        chalk: chalk.bold.bgHex("#9cbf87").hex("#000"),
+        text: "UPLOADED",
+      },
+    });
 
     return { shouldInvalidateCloudfront: true };
   } catch {
-    logger(
-      `${statusBadge("ERROR", chalk.bold.bgHex("#cd5a68"))} ${asset.bucketKey}`
-    );
+    logger({
+      assetName: asset.bucketKey,
+      details: [],
+      statusBadge: {
+        chalk: chalk.bold.bgHex("#cd5a68"),
+        text: "ERROR",
+      },
+    });
 
     return {
       shouldInvalidateCloudfront: false,
