@@ -5,8 +5,13 @@ import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import type { Options } from "../types";
 
 import type { Asset } from "./types";
-import { makeAssetLogger } from "./AssetLogger";
+import { makeAssetLogger, StatusBadge } from "./AssetLogger";
 import { checkDeployedAsset, DeployedAssetStatus } from "./checkDeployedAsset";
+
+const UPLOAD_SUCCESS_STATUS_BADGE: StatusBadge = {
+  chalk: chalk.bold.bgHex("#9cbf87").hex("#000"),
+  text: "UPLOADED",
+};
 
 type ShouldUploadResult = {
   ruling: boolean;
@@ -140,11 +145,18 @@ export async function uploadAsset(
   if (options.dryRun) {
     logger({
       assetName: asset.bucketKey,
-      details: shouldUpload.output,
-      statusBadge: {
-        chalk: chalk.bold.bgHex("#F2CA5F"),
-        text: "DRY RUN",
-      },
+      details: [
+        ...shouldUpload.output,
+        chalk.yellow(
+          chalk.bold(
+            `Because of --dry-run, this asset ${chalk.underline(
+              "wasn't"
+            )} actually uploaded.`
+          ),
+          "By re-running the deploy without the flag, this asset will actually be uploaded."
+        ),
+      ],
+      statusBadge: UPLOAD_SUCCESS_STATUS_BADGE,
     });
 
     return {
@@ -177,10 +189,7 @@ export async function uploadAsset(
     logger({
       assetName: asset.bucketKey,
       details: shouldUpload.output,
-      statusBadge: {
-        chalk: chalk.bold.bgHex("#9cbf87").hex("#000"),
-        text: "UPLOADED",
-      },
+      statusBadge: UPLOAD_SUCCESS_STATUS_BADGE,
     });
 
     return { shouldInvalidateCloudfront: true };

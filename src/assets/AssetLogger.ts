@@ -37,7 +37,7 @@ function makeBadge({ chalk, text }: StatusBadge): string {
   return chalk(paddedText);
 }
 
-type StatusBadge = {
+export type StatusBadge = {
   text: string;
   chalk: chalk.Chalk;
 };
