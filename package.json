@@ -4,7 +4,9 @@
   "description": "Node CLI tool for customized, powerful deploys to S3.",
   "author": "Alec Jacob Deitloff <alec.deitloff@gmail.com>",
   "license": "MIT",
-  "main": "index.js",
+  "bin": "./lib/cli/cli.js",
+  "main": "./lib/index.js",
+  "types": "./lib/index.d.ts",
   "scripts": {
     "start": "ts-node ./src/cli/cli.ts",
     "build": "tsc",
@@ -12,6 +14,10 @@
     "lint": "eslint \"./src/**/*.ts\"",
     "format": "prettier --write ."
   },
+  "files": [
+    "lib/**/*.js",
+    "lib/index.d.ts"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/ahlec/s3-deployer.git"
