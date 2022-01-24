@@ -1,39 +1,78 @@
 import chalk from "chalk";
 import md5 from "md5";
-import {
-  HeadObjectCommand,
-  S3Client,
-  PutObjectCommand,
-} from "@aws-sdk/client-s3";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 import type { Options } from "../types";
 
 import type { Asset } from "./types";
 import { makeAssetLogger } from "./AssetLogger";
+import { checkDeployedAsset, DeployedAssetStatus } from "./checkDeployedAsset";
 
-async function shouldUploadFile(
-  client: S3Client,
-  bucketName: string,
-  key: string,
-  eTag: string
-): Promise<boolean> {
-  try {
-    const head = await client.send(
-      new HeadObjectCommand({
-        Bucket: bucketName,
-        Key: key,
-      })
-    );
+type ShouldUploadResult = {
+  ruling: boolean;
+  output: readonly string[];
+};
 
-    return head.ETag !== eTag;
-  } catch (e) {
-    if (e.name === "NotFound") {
-      return true;
-    }
-
-    console.log(e);
-    return true;
+function shouldUploadAsset(
+  asset: Asset,
+  assetContents: Buffer,
+  deployedStatus: DeployedAssetStatus
+): ShouldUploadResult {
+  if (!deployedStatus.exists) {
+    return {
+      output: [],
+      ruling: true,
+    };
   }
+
+  // Compute the ETag, which for PutObject on AWS is the MD5 hash of the Body
+  // NOTE: AWS stores it as a string wrapped in double quotes
+  const eTag = `"${md5(assetContents)}"`;
+
+  // Compare the ETag
+  if (eTag !== deployedStatus.eTag) {
+    return {
+      output: [
+        chalk.yellow(
+          `Deployed ETag (${chalk.dim(
+            deployedStatus.eTag
+          )}) differs from current ETag (${chalk.dim(eTag)})`
+        ),
+      ],
+      ruling: true,
+    };
+  }
+
+  const eTagMessage = `Deployed ETag matches current ETag (${chalk.dim(eTag)})`;
+
+  // Compare the Cache-Control header
+  if (asset.cacheControl !== deployedStatus.cacheControl) {
+    return {
+      output: [
+        eTagMessage,
+        chalk.yellow(
+          `Deployed Cache-Control (${chalk.dim(
+            deployedStatus.cacheControl
+          )}) differs from current Cache-Control (${chalk.dim(
+            asset.cacheControl
+          )})`
+        ),
+      ],
+      ruling: true,
+    };
+  }
+
+  // Asset doesn't need to be reuploaded
+  return {
+    output: [
+      eTagMessage,
+      `Deployed Cache-Control matches current Cache-Control (${chalk.dim(
+        asset.cacheControl
+      )})`,
+      "No change detected for asset, so re-upload isn't deemed necessary.",
+    ],
+    ruling: false,
+  };
 }
 
 type UploadResult = {
@@ -72,21 +111,20 @@ export async function uploadAsset(
   // Read the current contents of the file
   const contents = await asset.getContents();
 
-  // Compute the ETag, which for PutObject on AWS is the MD5 hash of the Body
-  // NOTE: AWS stores it as a string wrapped in double quotes
-  const eTag = `"${md5(contents)}"`;
-
-  // Determine if we should upload the file right now
-  const shouldUpload = await shouldUploadFile(
+  // Retrieve information on the currently deployed version of this asset, if
+  // it exists
+  const existingStatus = await checkDeployedAsset(
     s3Client,
     options.bucket.name,
-    asset.bucketKey,
-    eTag
+    asset.bucketKey
   );
-  if (!shouldUpload) {
+
+  // Determine if we should upload the file right now
+  const shouldUpload = shouldUploadAsset(asset, contents, existingStatus);
+  if (!shouldUpload.ruling) {
     logger({
       assetName: asset.bucketKey,
-      details: [],
+      details: shouldUpload.output,
       statusBadge: {
         chalk: chalk.bold.bgHex("#394253"),
         text: "SKIPPED",
@@ -102,7 +140,7 @@ export async function uploadAsset(
   if (options.dryRun) {
     logger({
       assetName: asset.bucketKey,
-      details: [],
+      details: shouldUpload.output,
       statusBadge: {
         chalk: chalk.bold.bgHex("#F2CA5F"),
         text: "DRY RUN",
@@ -117,7 +155,7 @@ export async function uploadAsset(
   // Upload the file
   logger({
     assetName: asset.bucketKey,
-    details: [],
+    details: shouldUpload.output,
     statusBadge: {
       chalk: chalk.bold.bgHex("#f1ca81").hex("#000"),
       text: "WORKING..",
@@ -138,7 +176,7 @@ export async function uploadAsset(
 
     logger({
       assetName: asset.bucketKey,
-      details: [],
+      details: shouldUpload.output,
       statusBadge: {
         chalk: chalk.bold.bgHex("#9cbf87").hex("#000"),
         text: "UPLOADED",
@@ -149,7 +187,7 @@ export async function uploadAsset(
   } catch {
     logger({
       assetName: asset.bucketKey,
-      details: [],
+      details: shouldUpload.output,
       statusBadge: {
         chalk: chalk.bold.bgHex("#cd5a68"),
         text: "ERROR",
