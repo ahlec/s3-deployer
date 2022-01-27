@@ -3,6 +3,14 @@
   "version": "1.0.0",
   "description": "Node CLI tool for customized, powerful deploys to S3.",
   "author": "Alec Jacob Deitloff <alec.deitloff@gmail.com>",
+  "keywords": [
+    "s3",
+    "deploy",
+    "upload",
+    "cloudfront",
+    "aws",
+    "publish"
+  ],
   "license": "MIT",
   "bin": "./lib/cli/cli.js",
   "main": "./lib/index.js",
