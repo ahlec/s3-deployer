@@ -11,6 +11,9 @@
     "aws",
     "publish"
   ],
+  "publishConfig": {
+    "access": "public"
+  },
   "license": "MIT",
   "bin": "./lib/cli/cli.js",
   "main": "./lib/index.js",
