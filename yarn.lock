@@ -35,6 +35,8 @@ __metadata:
     typescript: 4.5.2
     wrap-ansi: ^7.0.0
     yargs: ^17.3.1
+  bin:
+    s3-deployer: ./lib/cli/cli.js
   languageName: unknown
   linkType: soft
 
