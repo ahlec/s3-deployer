@@ -57,8 +57,91 @@ module.exports = {
   buildDir: "./build",
   confirmation: [`Have you run ${chalk.yellow("yarn pre-release")} yet?`],
   cloudfront: {
-    id: "CL0UDFR0NT!",
+    id: "CL0UDFR0N7",
     region: "us-west-1",
   },
 };
 ```
+
+### `assets`
+
+| Key      | Type                                   | Default   |
+| -------- | -------------------------------------- | --------- |
+| `assets` | `{ [glob: string]: Asset \| boolean }` | See below |
+
+An optional parameter that is a lookup object of glob patterns to rules for how an asset should (or should not) be uploaded. The glob patterns are relative to the build directory.
+
+A rule is one of three values:
+
+- `true`: the asset should be uploaded with default options (default);
+- `false`: the asset shouldn't be uploaded;
+- An `Asset` type object
+
+This field comes with defaults that should serve regular use cases:
+
+```json
+{
+  "**/*.{htm,html}": {
+    "cacheControl": "no-cache"
+  },
+  "**/.DS_Store": false
+}
+```
+
+Any file in the build directory that doesn't have a provided rule will be uploaded with the default values of an `Asset` type object.
+
+#### `Asset` type
+
+| Field          | Type   | Default                                 |
+| -------------- | ------ | --------------------------------------- |
+| `acl`          | string | `"public-read"`                         |
+| `cacheControl` | string | `"public, max-age=31536000, immutable"` |
+| `contentType`  | string | (based on the MIME type of the file)    |
+
+All fields are optional. If a value isn't provided, the default value will be used.
+
+### `bucket` (Required)
+
+| Key      | Type             | Default |
+| -------- | ---------------- | ------- |
+| `bucket` | BucketDefinition | (none)  |
+
+The `bucket` config key describes your S3 bucket destination. This is a **required** field, and is an object with the following fields:
+
+| Field    | Type   |
+| -------- | ------ |
+| `name`   | string |
+| `region` | string |
+
+### `buildDir` (Required)
+
+| Key        | Type   | Default |
+| ---------- | ------ | ------- |
+| `buildDir` | string | (none)  |
+
+The `buildDir` config key is the **required** string pathname to the directory you want to deploy. This is relative to the current working directory if it isn't an absolute path. The root of this directory will be uploaded to the root of the S3 bucket.
+
+### `confirmation`
+
+| Key            | Type                           | Default |
+| -------------- | ------------------------------ | ------- |
+| `confirmation` | Confirmation \| Confirmation[] | []      |
+
+The `confirmation` config key is an **optional** array which, if specified, should contain yes/no prompts for the user to respond "yes" to in order to release. If the user responds "no" to any prompt, the deploy will not proceed.
+
+The user will _always_ be prompted, prior to any custom confirmations, to confirm they desire to release alongside a timestamp of when the build directory was last modified.
+
+A `Confirmation` maybe either a `string`, or a function that takes no parameters and returns a string.
+
+### `cloudfront`
+
+| Key          | Type                 | Default |
+| ------------ | -------------------- | ------- |
+| `cloudfront` | CloudfrontDefinition | `null`  |
+
+The `cloudfront` config key is an **optional** configuration object which, if specified, will be invalidated after all files have been deployed to S3. If your S3 bucket is not behind a Cloudfront distribution, you may omit this or set this field to `null`. The `CloudfrontDistribution` type takes the following fields:
+
+| Field    | Type   |
+| -------- | ------ |
+| `id`     | string |
+| `region` | string |
