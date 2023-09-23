@@ -10,13 +10,13 @@ import type { CloudfrontDefinition, Options } from "./types";
 export async function invalidateCloudfront(
   cloudfront: CloudfrontDefinition,
   assets: readonly Asset[],
-  options: Options
+  options: Options,
 ): Promise<void> {
   if (!assets.length) {
     console.log(
       `${chalk.bold(
-        "Skipping Cloudfront invalidation."
-      )} No files were uploaded.`
+        "Skipping Cloudfront invalidation.",
+      )} No files were uploaded.`,
     );
     return;
   }
@@ -24,7 +24,7 @@ export async function invalidateCloudfront(
   console.log(chalk.bold("Beginning Cloudfront invalidation."));
   if (options.dryRun) {
     console.log(
-      chalk.yellow("Dry run, so no invalidation is being performed.")
+      chalk.yellow("Dry run, so no invalidation is being performed."),
     );
     return;
   }
@@ -44,7 +44,7 @@ export async function invalidateCloudfront(
             Quantity: assets.length,
           },
         },
-      })
+      }),
     );
 
     if (!invalidation.Invalidation) {
@@ -53,7 +53,7 @@ export async function invalidateCloudfront(
     }
 
     console.log(
-      `${chalk.bold("Invalidation success.")} ${invalidation.Invalidation.Id}`
+      `${chalk.bold("Invalidation success.")} ${invalidation.Invalidation.Id}`,
     );
   } catch (e) {
     console.error(e);

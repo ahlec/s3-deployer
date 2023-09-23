@@ -69,7 +69,7 @@ export function getOptions(config: Config, dryRun: boolean): Options {
         isDefaultRule:
           !config.assets || config.assets[globPattern] !== definition,
       });
-    }
+    },
   );
 
   return {

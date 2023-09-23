@@ -8,7 +8,7 @@ import type { Asset } from "./types";
 async function recursiveRetrieveAssets(
   options: Options,
   directory: string,
-  output: Asset[]
+  output: Asset[],
 ): Promise<void> {
   const entities = await promises.readdir(directory, { withFileTypes: true });
   await Promise.all(
@@ -19,12 +19,12 @@ async function recursiveRetrieveAssets(
       }
 
       output.push(prepareAsset(options, absoluteFilename));
-    })
+    }),
   );
 }
 
 export async function retrieveAssets(
-  options: Options
+  options: Options,
 ): Promise<readonly Asset[]> {
   const assets: Asset[] = [];
   await recursiveRetrieveAssets(options, options.buildDirAbsolutePath, assets);

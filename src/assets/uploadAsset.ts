@@ -21,7 +21,7 @@ type ShouldUploadResult = {
 function shouldUploadAsset(
   asset: Asset,
   assetContents: Buffer,
-  deployedStatus: DeployedAssetStatus
+  deployedStatus: DeployedAssetStatus,
 ): ShouldUploadResult {
   if (!deployedStatus.exists) {
     return {
@@ -40,8 +40,8 @@ function shouldUploadAsset(
       output: [
         chalk.yellow(
           `Deployed ETag (${chalk.dim(
-            deployedStatus.eTag
-          )}) differs from current ETag (${chalk.dim(eTag)})`
+            deployedStatus.eTag,
+          )}) differs from current ETag (${chalk.dim(eTag)})`,
         ),
       ],
       ruling: true,
@@ -57,10 +57,10 @@ function shouldUploadAsset(
         eTagMessage,
         chalk.yellow(
           `Deployed Cache-Control (${chalk.dim(
-            deployedStatus.cacheControl
+            deployedStatus.cacheControl,
           )}) differs from current Cache-Control (${chalk.dim(
-            asset.cacheControl
-          )})`
+            asset.cacheControl,
+          )})`,
         ),
       ],
       ruling: true,
@@ -72,7 +72,7 @@ function shouldUploadAsset(
     output: [
       eTagMessage,
       `Deployed Cache-Control matches current Cache-Control (${chalk.dim(
-        asset.cacheControl
+        asset.cacheControl,
       )})`,
       "No change detected for asset, so re-upload isn't deemed necessary.",
     ],
@@ -87,7 +87,7 @@ type UploadResult = {
 export async function uploadAsset(
   s3Client: S3Client,
   options: Options,
-  asset: Asset
+  asset: Asset,
 ): Promise<UploadResult> {
   const logger = makeAssetLogger();
 
@@ -99,7 +99,7 @@ export async function uploadAsset(
         chalk.dim(
           `Rule '${asset.isIgnored.globPattern}'${
             asset.isIgnored.isDefaultRule ? " (default rule)" : ""
-          }`
+          }`,
         ),
       ],
       statusBadge: {
@@ -121,7 +121,7 @@ export async function uploadAsset(
   const existingStatus = await checkDeployedAsset(
     s3Client,
     options.bucket.name,
-    asset.bucketKey
+    asset.bucketKey,
   );
 
   // Determine if we should upload the file right now
@@ -150,10 +150,10 @@ export async function uploadAsset(
         chalk.yellow(
           chalk.bold(
             `Because of --dry-run, this asset ${chalk.underline(
-              "wasn't"
-            )} actually uploaded.`
+              "wasn't",
+            )} actually uploaded.`,
           ),
-          "By re-running the deploy without the flag, this asset will actually be uploaded."
+          "By re-running the deploy without the flag, this asset will actually be uploaded.",
         ),
       ],
       statusBadge: UPLOAD_SUCCESS_STATUS_BADGE,
@@ -183,7 +183,7 @@ export async function uploadAsset(
         CacheControl: asset.cacheControl,
         ContentType: asset.contentType,
         Key: asset.bucketKey,
-      })
+      }),
     );
 
     logger({

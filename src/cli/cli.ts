@@ -16,8 +16,8 @@ async function main(): Promise<void> {
   if (!config) {
     console.log(
       `${chalk.red(
-        "Config file could not be found."
-      )} Define a cosmiconfig config for '${COSMICONFIG_MODULE_NAME}'.`
+        "Config file could not be found.",
+      )} Define a cosmiconfig config for '${COSMICONFIG_MODULE_NAME}'.`,
     );
     process.exit(10);
   }

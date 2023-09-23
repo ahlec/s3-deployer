@@ -15,15 +15,15 @@ function getDefaultContentType(filename: string): string {
 
 export function prepareAsset(
   options: Options,
-  absoluteFilename: string
+  absoluteFilename: string,
 ): Asset {
   // Get the filename relative to the build directory (INCLUDE the leading /)
   const relativeFilename = absoluteFilename.substring(
-    options.buildDirAbsolutePath.length
+    options.buildDirAbsolutePath.length,
   );
 
   const rule = options.assetSpecialRules.find((r) =>
-    micromatch.isMatch(relativeFilename, r.globPattern)
+    micromatch.isMatch(relativeFilename, r.globPattern),
   );
 
   let isIgnored: IgnoreReason | false;

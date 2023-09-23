@@ -10,7 +10,7 @@ async function confirm(prompt: string): Promise<boolean> {
 }
 
 export async function receiveDeployConfirmation(
-  prompts: readonly string[]
+  prompts: readonly string[],
 ): Promise<boolean> {
   for (const prompt of prompts) {
     const response = await confirm(prompt);

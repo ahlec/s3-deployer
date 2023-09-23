@@ -56,7 +56,7 @@ export function makeAssetLogger(): LoggerFn {
   const wrap = (
     text: string,
     reservedSpaces: number,
-    getPrefix: (index: number) => string
+    getPrefix: (index: number) => string,
   ): string =>
     wrapAnsi(
       text,
@@ -66,7 +66,7 @@ export function makeAssetLogger(): LoggerFn {
         hard: true,
         trim: false,
         wordWrap: false,
-      }
+      },
     )
       .split("\n")
       .map((line, index) => `${chalk.white(getPrefix(index))} ${line}`)
@@ -80,7 +80,7 @@ export function makeAssetLogger(): LoggerFn {
       (index) =>
         index === 0
           ? makeBadge(statusBadge)
-          : " ".repeat(STATUS_BADGE_WIDTH_CHARS)
+          : " ".repeat(STATUS_BADGE_WIDTH_CHARS),
     );
 
     // Wrap the details into the available details space
@@ -95,7 +95,7 @@ export function makeAssetLogger(): LoggerFn {
           }
 
           return `${" ".repeat(DETAILS_RESERVED_SPACE - 1)}${symbol}`;
-        })
+        }),
       )
       .join("\n");
 
@@ -105,7 +105,7 @@ export function makeAssetLogger(): LoggerFn {
 
     // Erase what's already there, and write out to the console
     process.stdout.write(
-      prevNumLines ? ansiEraseLines(prevNumLines) + output : output
+      prevNumLines ? ansiEraseLines(prevNumLines) + output : output,
     );
     prevNumLines = output.split("\n").length;
   };

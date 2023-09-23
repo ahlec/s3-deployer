@@ -62,13 +62,13 @@ export async function runDeploy(options: Options): Promise<void> {
   const doesBuildDirectoryExist = existsSync(options.buildDirAbsolutePath);
 
   console.log(
-    `${chalk.bold("Build directory:")} ${options.buildDirAbsolutePath}`
+    `${chalk.bold("Build directory:")} ${options.buildDirAbsolutePath}`,
   );
   if (!doesBuildDirectoryExist) {
     console.log(
       `${chalk.red("Directory does not exist.")} Run ${chalk.bold(
-        "yarn build"
-      )} to generate a build.`
+        "yarn build",
+      )} to generate a build.`,
     );
     process.exit(1);
   }
@@ -85,15 +85,15 @@ export async function runDeploy(options: Options): Promise<void> {
     lastModifiedChalk(
       `${chalk.bold("Last modified:")} ${buildDirLastModified.toString()} (${
         relativeLastModified.label
-      })`
-    )
+      })`,
+    ),
   );
 
   console.log();
 
   // Perform the pre-deploy confirmation checks
   const readyToDeploy = await receiveDeployConfirmation(
-    options.confirmationPrompts
+    options.confirmationPrompts,
   );
   if (!readyToDeploy) {
     return;
@@ -118,7 +118,7 @@ export async function runDeploy(options: Options): Promise<void> {
   console.log(
     `${chalk.bold("S3 Upload Complete.")} ${uploadedAssets.length} ${
       uploadedAssets.length === 1 ? "asset" : "assets"
-    } uploaded.`
+    } uploaded.`,
   );
   if (uploadedAssets.length) {
     uploadedAssets.forEach((asset): void => {

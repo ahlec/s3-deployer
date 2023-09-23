@@ -15,14 +15,14 @@ export type DeployedAssetStatus =
 export async function checkDeployedAsset(
   client: S3Client,
   bucketName: string,
-  key: string
+  key: string,
 ): Promise<DeployedAssetStatus> {
   try {
     const head = await client.send(
       new HeadObjectCommand({
         Bucket: bucketName,
         Key: key,
-      })
+      }),
     );
 
     return {
