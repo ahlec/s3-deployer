@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Node CLI tool for customized, powerful deploys to S3.",
   "author": "Alec Jacob Deitloff <alec.deitloff@gmail.com>",
+  "type": "module",
   "keywords": [
     "s3",
     "deploy",
@@ -16,7 +17,7 @@
   },
   "license": "MIT",
   "bin": "./lib/cli/cli.js",
-  "main": "./lib/index.js",
+  "exports": "./lib/index.js",
   "types": "./lib/index.d.ts",
   "scripts": {
     "start": "ts-node ./src/cli/cli.ts",
@@ -41,7 +42,7 @@
     "@aws-sdk/client-s3": "^3.44.0",
     "ajv": "^8.9.0",
     "chalk": "4.1.2",
-    "cosmiconfig": "^7.0.1",
+    "cosmiconfig": "^8.3.6",
     "inquirer": "^8.2.0",
     "md5": "^2.3.0",
     "micromatch": "^4.0.4",
@@ -63,7 +64,7 @@
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
     "prettier": "^3.0.3",
-    "ts-node": "^10.4.0",
+    "ts-node": "^10.9.1",
     "typescript": "5.2.2"
   },
   "prettier": {},

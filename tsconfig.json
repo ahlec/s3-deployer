@@ -4,9 +4,13 @@
     "outDir": "lib",
     "esModuleInterop": true,
     "moduleResolution": "node",
-    "module": "commonjs",
+    "module": "esnext",
     "target": "es5",
     "sourceMap": false,
     "strictNullChecks": true
+  },
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
   }
 }

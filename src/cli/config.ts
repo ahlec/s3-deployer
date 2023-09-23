@@ -1,5 +1,5 @@
 import Ajv, { JSONSchemaType } from "ajv";
-import { cosmiconfigSync } from "cosmiconfig";
+import { cosmiconfig } from "cosmiconfig";
 
 import { COSMICONFIG_MODULE_NAME } from "../constants";
 import type {
@@ -88,9 +88,9 @@ const SCHEMA: JSONSchemaType<Config> = {
   type: "object",
 };
 
-export function loadConfig(): Config | null {
-  const loader = cosmiconfigSync(COSMICONFIG_MODULE_NAME);
-  const configFile = loader.search();
+export async function loadConfig(): Promise<Config | null> {
+  const loader = cosmiconfig(COSMICONFIG_MODULE_NAME);
+  const configFile = await loader.search();
   if (!configFile || !configFile.config) {
     return null;
   }

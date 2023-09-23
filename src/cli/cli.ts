@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+#!/usr/bin/env node --experimental-specifier-resolution=node
 
 import chalk from "chalk";
 import yargs from "yargs";
@@ -12,7 +12,7 @@ import { loadConfig } from "./config";
 
 async function main(): Promise<void> {
   // Retrieve the config
-  const config = loadConfig();
+  const config = await loadConfig();
   if (!config) {
     console.log(
       `${chalk.red(
