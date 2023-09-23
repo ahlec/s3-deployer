@@ -33,6 +33,7 @@ __metadata:
     eslint: ^8.50.0
     eslint-config-prettier: ^9.0.0
     eslint-plugin-prettier: ^5.0.0
+    fix-esm-import-path: ^1.4.0
     inquirer: ^9.2.11
     md5: ^2.3.0
     micromatch: ^4.0.5
@@ -2521,6 +2522,17 @@ __metadata:
     locate-path: ^6.0.0
     path-exists: ^4.0.0
   checksum: 07955e357348f34660bde7920783204ff5a26ac2cafcaa28bace494027158a97b9f56faaf2d89a6106211a8174db650dd9f503f9c0d526b1202d5554a00b9095
+  languageName: node
+  linkType: hard
+
+"fix-esm-import-path@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "fix-esm-import-path@npm:1.4.0"
+  dependencies:
+    debug: ^4.3.2
+  bin:
+    fix-esm-import-path: fix-esm-import-path.js
+  checksum: 3f8458d9328ed22c09623190f7d150de6f9276138b913b55128bdd801ea0c2dd5a6cced83bb5c69647cf7ae8884355a3364d37b762173f32049944e89c5c6245
   languageName: node
   linkType: hard
 

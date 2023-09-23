@@ -1,4 +1,4 @@
-#!/usr/bin/env node --experimental-specifier-resolution=node
+#!/usr/bin/env node
 
 import chalk from "chalk";
 import yargs from "yargs";
