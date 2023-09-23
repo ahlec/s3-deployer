@@ -1,5 +1,7 @@
 # s3-deployer
 
+[![npm version](https://badge.fury.io/js/@ahlec%2Fs3-deployer.svg)](https://badge.fury.io/js/@ahlec%2Fs3-deployer)
+
 Deploying to S3 and invalidating a Cloudfront distribution _is_ the deploying process for many web applications. Doing it can be trivial — until you need something non-trivial, at which point it quickly can become a nightmare.
 
 The **s3-deployer** is a program that handles uploading to an S3 bucket and invalidating an optional Cloudfront distribution in front of it. This runs as a CLI script and is highly configurable.
