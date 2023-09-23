@@ -1,6 +1,10 @@
 import chalk from "chalk";
 import md5 from "md5";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  S3ServiceException,
+} from "@aws-sdk/client-s3";
 
 import type { Options } from "../types";
 
@@ -193,10 +197,32 @@ export async function uploadAsset(
     });
 
     return { shouldInvalidateCloudfront: true };
-  } catch {
+  } catch (e) {
+    let errorMessage: string;
+    if (e instanceof S3ServiceException) {
+      if (typeof e.$metadata.httpStatusCode === "number") {
+        errorMessage = `${e.name} (HTTP ${e.$metadata.httpStatusCode})`;
+      } else {
+        errorMessage = e.name;
+      }
+    } else {
+      errorMessage = String(e);
+    }
+
+    const uploadProperties = [
+      `ACL: ${asset.acl}`,
+      `CacheControl: ${asset.cacheControl}`,
+      `ContentType: ${asset.contentType}`,
+    ];
+
     logger({
       assetName: asset.bucketKey,
-      details: shouldUpload.output,
+      details: [
+        ...shouldUpload.output,
+        chalk.red(errorMessage),
+        chalk.redBright("Upload Properties:"),
+        ...uploadProperties.map((str) => `  ${chalk.redBright(str)}`),
+      ],
       statusBadge: {
         chalk: chalk.bold.bgHex("#cd5a68"),
         text: "ERROR",
