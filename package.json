@@ -1,6 +1,6 @@
 {
   "name": "@ahlec/s3-deployer",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Node CLI tool for customized, powerful deploys to S3.",
   "author": "Alec Jacob Deitloff <alec.deitloff@gmail.com>",
   "type": "module",
