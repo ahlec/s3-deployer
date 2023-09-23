@@ -145,3 +145,19 @@ The `cloudfront` config key is an **optional** configuration object which, if sp
 | -------- | ------ |
 | `id`     | string |
 | `region` | string |
+
+### `title`
+
+| Key     | Type   | Default       |
+| ------- | ------ | ------------- |
+| `title` | string | `"S3 Deploy"` |
+
+The `title` config key is purely for display purposes. If specified, this configures the first line of text that is written out to the console when the application is started. This is purely for "branding" purposes or to provide more specific context for what this tool is about to do, and can be safely ignored.
+
+### `subtitle`
+
+| Key        | Type   | Default                                                               |
+| ---------- | ------ | --------------------------------------------------------------------- |
+| `subtitle` | string | `Deploying the latest build to the '${config.bucket.name}' S3 bucket` |
+
+The `subtitle` config key is purely for display purposes. If specified, this configures the second line of text that is written out to the console when the application is started. This is purely for "branding" purposes, with a desired intention of providing more context for what this tool is going to perform. It can be safely omitted/ignored.

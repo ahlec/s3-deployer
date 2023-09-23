@@ -83,6 +83,14 @@ const SCHEMA: JSONSchemaType<Config> = {
       nullable: true,
       type: "array",
     },
+    subtitle: {
+      nullable: true,
+      type: "string",
+    },
+    title: {
+      nullable: true,
+      type: "string",
+    },
   },
   required: ["bucket", "buildDir"],
   type: "object",

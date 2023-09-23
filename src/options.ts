@@ -79,5 +79,9 @@ export function getOptions(config: Config, dryRun: boolean): Options {
     cloudfront: config.cloudfront || null,
     confirmationPrompts,
     dryRun,
+    subtitle:
+      config.subtitle ??
+      `Deploying the latest build to the '${config.bucket.name}' S3 bucket`,
+    title: config.title ?? "S3 Deploy",
   };
 }

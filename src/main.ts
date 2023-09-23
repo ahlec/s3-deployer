@@ -54,8 +54,8 @@ function getRelativeTime(ms: Date): { label: string; isRecent: boolean } {
 
 export async function runDeploy(options: Options): Promise<void> {
   // Intro into the tool
-  console.log(chalk.bold("Personal Website Release Tool"));
-  console.log("Deploys Alec's personal website to S3");
+  console.log(chalk.bold(options.title));
+  console.log(options.subtitle);
   console.log();
 
   // Output information about the last build

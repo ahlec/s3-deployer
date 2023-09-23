@@ -69,6 +69,19 @@ export type Config = {
    * pass @null.
    */
   cloudfront?: CloudfrontDefinition | null;
+
+  /**
+   * The human-readable title of the tool, displayed at the start of the program.
+   * This is a purely cosmetic option ("for branding") and can be safely omitted.
+   */
+  title?: string;
+
+  /**
+   * The human-readable subtitle of the tool, which is displayed underneath the
+   * title at the start of the program. This is a purely cosmetic option
+   * ("for branding") and can be safely omitted.
+   */
+  subtitle?: string;
 };
 
 export type AssetRule = {
@@ -89,4 +102,6 @@ export type Options = {
   cloudfront: CloudfrontDefinition | null;
   confirmationPrompts: readonly string[];
   dryRun: boolean;
+  subtitle: string;
+  title: string;
 };
