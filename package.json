@@ -28,7 +28,8 @@
   },
   "files": [
     "lib/**/*.js",
-    "lib/index.d.ts"
+    "lib/index.d.ts",
+    "lib/types.d.ts"
   ],
   "repository": {
     "type": "git",
