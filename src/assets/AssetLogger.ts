@@ -1,4 +1,4 @@
-import chalk from "chalk";
+import chalk, { ChalkInstance } from "chalk";
 import wrapAnsi from "wrap-ansi";
 
 // https://www2.ccs.neu.edu/research/gpc/VonaUtils/vona/terminal/vtansi.htm
@@ -39,7 +39,7 @@ function makeBadge({ chalk, text }: StatusBadge): string {
 
 export type StatusBadge = {
   text: string;
-  chalk: chalk.Chalk;
+  chalk: ChalkInstance;
 };
 
 type LoggerOptions = {
